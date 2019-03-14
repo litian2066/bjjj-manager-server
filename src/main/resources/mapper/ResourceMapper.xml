@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.greatsoft.bjjj.mapper.ResourceMapper">
+	<resultMap id="resourceResultMap" type="net.greatsoft.bjjj.entity.system.PermissionResource">
+		<id property="id" column="RESOURCES_ID" jdbcType="VARCHAR" />
+		<result property="parentId" column="RESOURCES_PID" jdbcType="VARCHAR" />
+		<result property="name" column="RESOURCES_NAME" jdbcType="VARCHAR" />
+		<result property="isValid" column="IS_VALID" jdbcType="VARCHAR" />
+		<result property="url" column="RESOURCES_URL" jdbcType="VARCHAR" />
+		<result property="image" column="RESOURCES_IMG" jdbcType="VARCHAR" />
+		<result property="remark" column="REMARKS" jdbcType="VARCHAR" />
+		<result property="serialNo" column="SERIAL_NO" jdbcType="NUMERIC" />
+		<result property="createTime" column="CREATE_TIME" jdbcType="TIMESTAMP" />
+		<result property="updateTime" column="UPDATE_TIME" jdbcType="TIMESTAMP" />
+		<result property="icon" column="ICON" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		resources_id, resources_pid, resources_name, resources_url, is_valid, resources_img, remarks, icon
+	</sql>
+	<select id="findResoursesByRoleId" parameterType="java.lang.String" resultMap="resourceResultMap">
+		select
+			a.RESOURCES_ID as id,
+			a.RESOURCES_PID as parentId,
+			a.RESOURCES_NAME as name,
+			a.IS_VALID as isValid,
+			a.RESOURCES_URL as url,
+			a.RESOURCES_IMG as image,
+			a.REMARKS as remark,
+			a.icon as icon,
+			a.SERIAL_NO as serialNo
+		from 
+			resources a,
+			role_resources b
+		where 
+			a.RESOURCES_ID = b.RESOURCES_ID 
+		and 
+			b.ROLE_ID = #{roleId,jdbcType=VARCHAR}
+	</select>
+	<select id="findResourcesByUsersId" parameterType="map" resultMap="resourceResultMap">
+		select
+		res.RESOURCES_ID,
+		res.RESOURCES_PID,
+		res.RESOURCES_NAME,
+		res.IS_VALID,
+		res.RESOURCES_URL,
+		res.RESOURCES_IMG,
+		res.REMARKS,
+		res.SERIAL_NO,
+		res.icon
+		from resources res, role_resources rr, role r,users_role ur,user_system u
+		where res.resources_id = rr.resources_id
+		and rr.role_id = r.role_id
+		and r.role_id = ur.role_id
+		and ur.users_id = u.user_id
+		and u.user_id = #{userId,jdbcType=VARCHAR}
+		and res.is_valid = '1'
+	</select>
+	<select id="findByResourcesId" parameterType="java.lang.String" resultMap="resourceResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from resources
+		where resources_id = #{resourcesId,jdbcType=VARCHAR}
+	</select>
+</mapper>

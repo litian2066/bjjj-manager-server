@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.greatsoft.bjjj.mapper.ItemsMapper">
+
+	<select id="findItemsList" resultType="map" parameterType="map">
+		SELECT T.ITEM_ORGID AS "orgid",
+		T.ITEM_ID AS "id",
+		T.ITEM_NAME AS "name",
+		DECODE(T.ITEM_STATUS, 0, '纳入预算', 1, '备选','2','申请追加','3','统筹安排') AS "status",
+		decode(T.ITEM_ISHIGH, 0, '是', 1, '否', '') as "isHigh",
+		T.ITEM_ISHIGH as "isHighItem",
+		DECODE(Y.AUD_ITEMSTATUS,0,'通过',1,'拒绝',2,'已上报',3,'验证通过',9,'待审核',10,'信息填报',11,'绩效目标',12,'子项目',20,'审核通过',21,'审核拒绝','') as "auditstatus",
+		decode(T.ITEM_SAVESTATUS, '0', '未记录', '1', '保存成功', '2', '暂时保存', '') as "saveStatus",
+		(select nvl(sum(nvl(c.sub_sum, 0)), 0)
+		from ys_subject c
+		where  c.sub_itemid = t.item_id and (c.sub_isentrust_detail = '1' or c.sub_subjectcode = '30227')) as "sum",
+		(select nvl(sum(nvl(c.sub_sum, 0)), 0)
+		from ys_subject c
+		where c.sub_sumfrom = '0' and  c.sub_itemid = t.item_id and (c.sub_isentrust_detail = '1' or c.sub_subjectcode = '30227')) as "czsum",
+		(select nvl(sum(nvl(c.sub_sum, 0)), 0)
+		from ys_subject c
+		where c.sub_sumfrom != '0' and  c.sub_itemid = t.item_id and (c.sub_isentrust_detail = '1' or c.sub_subjectcode = '30227')) as "qtsum",
+		(select nvl(sum(nvl(c.sub_replysum, 0)), 0)
+		from ys_subject c
+		where  c.sub_itemid = t.item_id and (c.sub_isentrust_detail = '1' or c.sub_subjectcode = '30227')) as "replysum",
+		(select nvl(sum(nvl(c.sub_replysum, 0)), 0)
+		from ys_subject c
+		where c.sub_sumfrom = '0' and  c.sub_itemid = t.item_id and (c.sub_isentrust_detail = '1' or c.sub_subjectcode = '30227')) as "replyczsum",
+		(select nvl(sum(nvl(c.sub_replysum, 0)), 0)
+		from ys_subject c
+		where c.sub_sumfrom != '0' and  c.sub_itemid = t.item_id and (c.sub_isentrust_detail = '1' or c.sub_subjectcode = '30227')) as "replyqtsum",
+		T.ITEM_ORDER AS "order",
+		T.ITEM_SORT AS "sort",
+		(SELECT nvl(ORG_NAME, '')
+		FROM ORG_SYSTEM
+		WHERE ORG_ID = T.ITEM_AGENTOFFICE) AS "office",
+		decode(T.ITEM_ITEMSTATUS, '10', '未记录', '1', '退回', '0', '审核通过', '2', '已上报', '9', '未上报', '') as "itemStatus"
+		FROM YS_ITEMS T
+		LEFT JOIN YS_AUDITRECORD Y
+		ON T.ITEM_ORGID = Y.AUD_ORGID
+		AND T.ITEM_YEAR = Y.AUD_YEAR
+		WHERE T.ITEM_IMPDEGREE IS NOT NULL
+		AND T.ITEM_CLASS IS NOT NULL
+		AND T.ITEM_ORGID = #{orgId}
+		AND T.ITEM_AUDITSTATUS IN ('10', '11', '12')
+		<if test="type != null and type != ''">
+			and T.ITEM_TYPE = #{type}
+		</if>
+		<if test="year != null and year != ''">
+			and T.ITEM_YEAR = #{year}
+		</if>
+		<if test="auditStatus != null and auditStatus != ''">
+			and T.AUD_AUDITSTATUS = #{auditStatus}
+		</if>
+		<if test="status != null and status != ''">
+			and T.ITEM_STATUS = #{status}
+		</if>
+		order by T.ITEM_SORT,T.ITEM_ID
+	</select>
+
+
+</mapper>

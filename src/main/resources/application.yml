@@ -1,0 +1,28 @@
+#data-source
+spring:
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@127.0.0.1:1521:orcl
+    username: bjjj
+    password: bjjj
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    database-platform: org.hibernate.dialect.OracleDialect
+  session:
+    store-type: redis
+  redis:
+    database: 0
+    host: localhost
+    port: 6379
+    expireTime: 12
+server:
+  port: 9000
+
+#mybatis
+mybatis:
+  type-aliases-package: net.greatsoft.bjjj.mapper
+  mapper-locations:
+    - classpath*:mapper/*Mapper.xml
+
